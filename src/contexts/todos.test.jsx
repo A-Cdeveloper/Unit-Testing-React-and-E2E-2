@@ -42,3 +42,72 @@ describe("TodosProvider", () => {
     expect(content).toHaveTextContent(1);
   });
 });
+
+describe("TodosContext reducer", () => {
+  it("should have a default state", () => {
+    const newState = reducer(initialState, { type: "unknown" });
+    expect(newState).toEqual(initialState);
+  });
+
+  it("should add new todo", () => {
+    const newState = reducer(initialState, {
+      type: "addTodo",
+      payload: { id: 1, text: "test", isCompleted: false },
+    });
+    expect(newState).toEqual({
+      ...initialState,
+      todos: [{ id: 1, text: "test", isCompleted: false }],
+    });
+  });
+
+  it("should toggleAll todos", () => {
+    const oldState = {
+      ...initialState,
+      todos: [
+        { id: 1, text: "test", isCompleted: false },
+        { id: 2, text: "test2", isCompleted: true },
+        { id: 3, text: "test3", isCompleted: false },
+      ],
+    };
+    const newState = reducer(oldState, {
+      type: "toggleAll",
+      payload: true,
+    });
+
+    expect(newState.todos.every((todo) => todo.isCompleted)).toBe(true);
+  });
+
+  it("should updateTodo todos", () => {
+    const oldState = {
+      ...initialState,
+      todos: [{ id: 1, text: "test", isCompleted: false }],
+    };
+
+    const newState = reducer(oldState, {
+      type: "updateTodo",
+      payload: { id: 1, text: "test10" },
+    });
+
+    expect(newState.todos[0].text).toEqual("test10");
+  });
+
+  it("should removeTodo todos", () => {
+    const oldState = {
+      ...initialState,
+      todos: [{ id: 1, text: "test", isCompleted: false }],
+    };
+    const newState = reducer(oldState, {
+      type: "removeTodo",
+      payload: 1,
+    });
+    expect(newState.todos.length).toBe(0);
+  });
+
+  it("changeFilter function", () => {
+    const newState = reducer(initialState, {
+      type: "changeFilter",
+      payload: "active",
+    });
+    expect(newState.filter).toBe("active");
+  });
+});
