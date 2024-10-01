@@ -19,4 +19,7 @@ module.exports = {
     ],
     "react/prop-types": 0,
   },
+  env: {
+    vitest: true, // Enables Vitest globals like describe, it, expect
+  },
 };

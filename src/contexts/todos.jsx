@@ -139,6 +139,7 @@ export const TodosProvider = ({ children }) => {
           changeFilter: (filter) => changeFilter(dispatch, filter),
           toggleAll: (isCompleted) =>
             toggleAll(dispatch, isCompleted, state.todos),
+          getTodos: () => getTodos(dispatch),
         },
       ]}
     >

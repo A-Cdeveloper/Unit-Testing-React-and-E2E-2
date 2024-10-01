@@ -5,6 +5,7 @@ import Todo from "../components/Todo";
 
 const Main = () => {
   const [todosState, , { toggleAll }] = useContext(TodosContext);
+
   const [editingId, setEditingId] = useState(null);
   const noTodosClass = todosState.todos.length === 0 ? "hidden" : "";
   const isAllTodosSelected = todosState.todos.every((todo) => todo.isCompleted);
