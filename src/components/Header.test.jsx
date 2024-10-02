@@ -6,27 +6,7 @@ import { expect } from "vitest";
 import userEvent from "@testing-library/user-event";
 
 describe("Header", () => {
-  it("should render initial ", () => {
-    const mockDispatch = vi.fn();
-    const mockAddToDo = vi.fn();
-    render(
-      <TodosContext.Provider
-        value={[{}, mockDispatch, { addTodo: mockAddToDo }]}
-      >
-        <Header />
-      </TodosContext.Provider>
-    );
-
-    const header = screen.getByTestId("header");
-    expect(header).toHaveTextContent("todos");
-
-    const input = screen.getByTestId("newTodoInput");
-    expect(input).toHaveValue("");
-    expect(input).toHaveFocus();
-    expect(input).toHaveAttribute("placeholder", "What needs to be done?");
-  });
-
-  it("should add new todo", async () => {
+  const renderComponent = () => {
     const mockDispatch = vi.fn();
     const mockAddToDo = vi.fn();
     const user = userEvent.setup();
@@ -37,9 +17,26 @@ describe("Header", () => {
         <Header />
       </TodosContext.Provider>
     );
+    return {
+      mockAddToDo,
+      input: screen.getByTestId("newTodoInput"),
+      headline: screen.getByTestId("header"),
+      user,
+    };
+  };
 
-    ///
-    const input = screen.getByTestId("newTodoInput");
+  it("should render initial ", () => {
+    const { input, headline } = renderComponent();
+
+    expect(headline).toHaveTextContent("todos");
+    expect(input).toHaveValue("");
+    expect(input).toHaveFocus();
+    expect(input).toHaveAttribute("placeholder", "What needs to be done?");
+  });
+
+  it("should add new todo", async () => {
+    const { input, user, mockAddToDo } = renderComponent();
+
     expect(input).toHaveValue("");
     await user.type(input, "New Todo");
     expect(input).toHaveValue("New Todo");
