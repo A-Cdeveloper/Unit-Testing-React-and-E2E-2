@@ -2,12 +2,12 @@
   "todos": [
     {
       "text": "clean house",
-      "isCompleted": true,
+      "isCompleted": false,
       "id": "ebc3"
     },
     {
       "text": "feed the dog",
-      "isCompleted": true,
+      "isCompleted": false,
       "id": "78bc"
     },
     {
@@ -22,7 +22,7 @@
     },
     {
       "text": "wach car",
-      "isCompleted": true,
+      "isCompleted": false,
       "id": "0731"
     },
     {
