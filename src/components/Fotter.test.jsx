@@ -28,50 +28,57 @@ describe("Footer", () => {
     expect(footer).toHaveClass("hidden");
   });
 
-  it("should render counter with 1 todos", async () => {
-    const { footer, todoCount } = renderComponent({
+  it.each([
+    {
+      case: "1 todo",
       todos: [{ id: 1, text: "test", isCompleted: false }],
-      filter: "all",
-    });
-    expect(footer).not.toHaveClass("hidden");
-    expect(todoCount).toHaveTextContent("1 item left");
-  });
-
-  it("should render counter with 2 todos", async () => {
-    const { footer, todoCount } = renderComponent({
+      expected: "1 item left",
+    },
+    {
+      case: "2 todos",
       todos: [
         { id: 1, text: "test", isCompleted: false },
         { id: 2, text: "test2", isCompleted: false },
       ],
+      expected: "2 items left",
+    },
+  ])("should render counter with $case", ({ todos, expected }) => {
+    const { footer, todoCount } = renderComponent({
+      todos,
       filter: "all",
     });
-
     expect(footer).not.toHaveClass("hidden");
-    expect(todoCount).toHaveTextContent("2 items left");
+    expect(todoCount).toHaveTextContent(expected);
   });
 
-  it("should render filter buttons with default filter all", () => {
-    const { filterLinks } = renderComponent({
-      todos: [{ id: 1, text: "test", isCompleted: false }],
+  it.each([
+    {
+      case: "all",
       filter: "all",
-    });
-    expect(filterLinks[0]).toHaveClass("selected");
-  });
-
-  it("should render selected filter button on active", () => {
-    const { filterLinks } = renderComponent({
-      todos: [{ id: 1, text: "test", isCompleted: false }],
+    },
+    {
+      case: "active",
       filter: "active",
-    });
-    expect(filterLinks[1]).toHaveClass("selected");
-  });
-
-  it("should render selected filter button on completed", () => {
+    },
+    {
+      case: "completed",
+      filter: "completed",
+    },
+  ])("should render filter button with $case selected", ({ filter }) => {
     const { filterLinks } = renderComponent({
       todos: [{ id: 1, text: "test", isCompleted: false }],
-      filter: "completed",
+      filter,
     });
-    expect(filterLinks[2]).toHaveClass("selected");
+
+    if (filter === "all") {
+      expect(filterLinks[0]).toHaveClass("selected");
+    }
+    if (filter === "active") {
+      expect(filterLinks[1]).toHaveClass("selected");
+    }
+    if (filter === "completed") {
+      expect(filterLinks[2]).toHaveClass("selected");
+    }
   });
 
   it("should change filter", async () => {
