@@ -7,159 +7,79 @@ import userEvent from "@testing-library/user-event";
 import { act } from "react";
 
 describe("Footer", () => {
-  it("should render hidden class on initial with no todos", () => {
+  const renderComponent = (state, reducerFunction = {}) => {
     const mockDispatch = vi.fn();
+    const user = userEvent.setup();
     render(
-      <TodosContext.Provider
-        value={[{ todos: [], filter: "all" }, mockDispatch, {}]}
-      >
+      <TodosContext.Provider value={[state, mockDispatch, reducerFunction]}>
         <Footer />
       </TodosContext.Provider>
     );
-    const footer = screen.getByTestId("footer");
+    return {
+      footer: screen.getByTestId("footer"),
+      todoCount: screen.getByTestId("todoCount"),
+      filterLinks: screen.getAllByTestId("filterLink"),
+      user,
+    };
+  };
+
+  it("should render hidden class on initial with no todos", () => {
+    const { footer } = renderComponent({ todos: [], filter: "all" });
     expect(footer).toHaveClass("hidden");
   });
 
   it("should render counter with 1 todos", async () => {
-    const mockDispatch = vi.fn();
-
-    render(
-      <TodosContext.Provider
-        value={[
-          {
-            todos: [{ id: 1, text: "test", isCompleted: false }],
-            filter: "all",
-          },
-          mockDispatch,
-          {},
-        ]}
-      >
-        <Footer />
-      </TodosContext.Provider>
-    );
-
-    const footer = screen.getByTestId("footer");
+    const { footer, todoCount } = renderComponent({
+      todos: [{ id: 1, text: "test", isCompleted: false }],
+      filter: "all",
+    });
     expect(footer).not.toHaveClass("hidden");
-
-    const todoCount = screen.getByTestId("todoCount");
     expect(todoCount).toHaveTextContent("1 item left");
   });
 
   it("should render counter with 2 todos", async () => {
-    const mockDispatch = vi.fn();
+    const { footer, todoCount } = renderComponent({
+      todos: [
+        { id: 1, text: "test", isCompleted: false },
+        { id: 2, text: "test2", isCompleted: false },
+      ],
+      filter: "all",
+    });
 
-    render(
-      <TodosContext.Provider
-        value={[
-          {
-            todos: [
-              { id: 1, text: "test", isCompleted: false },
-              { id: 2, text: "test2", isCompleted: false },
-            ],
-            filter: "all",
-          },
-          mockDispatch,
-          {},
-        ]}
-      >
-        <Footer />
-      </TodosContext.Provider>
-    );
-
-    const footer = screen.getByTestId("footer");
     expect(footer).not.toHaveClass("hidden");
-
-    const todoCount = screen.getByTestId("todoCount");
     expect(todoCount).toHaveTextContent("2 items left");
   });
 
   it("should render filter buttons with default filter all", () => {
-    const mockDispatch = vi.fn();
-
-    render(
-      <TodosContext.Provider
-        value={[
-          {
-            todos: [{ id: 1, text: "test", isCompleted: false }],
-            filter: "all",
-          },
-          mockDispatch,
-          {},
-        ]}
-      >
-        <Footer />
-      </TodosContext.Provider>
-    );
-
-    //
-    const filterLinks = screen.getAllByTestId("filterLink"); //
+    const { filterLinks } = renderComponent({
+      todos: [{ id: 1, text: "test", isCompleted: false }],
+      filter: "all",
+    });
     expect(filterLinks[0]).toHaveClass("selected");
   });
 
   it("should render selected filter button on active", () => {
-    const mockDispatch = vi.fn();
-
-    render(
-      <TodosContext.Provider
-        value={[
-          {
-            todos: [{ id: 1, text: "test", isCompleted: false }],
-            filter: "active",
-          },
-          mockDispatch,
-          {},
-        ]}
-      >
-        <Footer />
-      </TodosContext.Provider>
-    );
-
-    //
-    const filterLinks = screen.getAllByTestId("filterLink"); //
+    const { filterLinks } = renderComponent({
+      todos: [{ id: 1, text: "test", isCompleted: false }],
+      filter: "active",
+    });
     expect(filterLinks[1]).toHaveClass("selected");
   });
 
   it("should render selected filter button on completed", () => {
-    const mockDispatch = vi.fn();
-
-    render(
-      <TodosContext.Provider
-        value={[
-          {
-            todos: [{ id: 1, text: "test", isCompleted: false }],
-            filter: "completed",
-          },
-          mockDispatch,
-          {},
-        ]}
-      >
-        <Footer />
-      </TodosContext.Provider>
-    );
-
-    //
-    const filterLinks = screen.getAllByTestId("filterLink"); //
+    const { filterLinks } = renderComponent({
+      todos: [{ id: 1, text: "test", isCompleted: false }],
+      filter: "completed",
+    });
     expect(filterLinks[2]).toHaveClass("selected");
   });
 
   it("should change filter", async () => {
     const changeFilterMock = vi.fn();
-    const mockDispatch = vi.fn();
-
-    render(
-      <TodosContext.Provider
-        value={[
-          { todos: [], filter: "all" },
-          mockDispatch,
-          { changeFilter: changeFilterMock },
-        ]}
-      >
-        <Footer />
-      </TodosContext.Provider>
+    const { user, filterLinks } = renderComponent(
+      { todos: [], filter: "all" },
+      { changeFilter: changeFilterMock }
     );
-
-    const user = userEvent.setup();
-    const filterLinks = screen.getAllByTestId("filterLink");
     await user.click(filterLinks[1]);
     expect(changeFilterMock).toHaveBeenCalledWith("active");
   });
