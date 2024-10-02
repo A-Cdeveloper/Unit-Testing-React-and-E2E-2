@@ -1,16 +1,24 @@
 import { render, screen } from "@testing-library/react";
 
-import Todo from "./Todo";
-import { TodosContext } from "../contexts/todos";
-import { expect } from "vitest";
 import userEvent from "@testing-library/user-event";
+import { expect } from "vitest";
+import { TodosContext } from "../contexts/todos";
+import Todo from "./Todo";
 
 describe("Todo", () => {
-  it("should render default state", () => {
+  const renderComponent = (isEditing) => {
     const mochDispatch = vi.fn();
     const updateMockTodo = vi.fn();
     const removeMockTodo = vi.fn();
     const mockEditingId = vi.fn();
+
+    const mockedTodo = {
+      id: 1,
+      text: "First todo",
+      isCompleted: false,
+    };
+
+    const user = userEvent.setup();
 
     render(
       <TodosContext.Provider
@@ -22,59 +30,42 @@ describe("Todo", () => {
       >
         <Todo
           todo={{ id: 1, text: "First todo", isCompleted: false }}
-          isEditing={false}
+          isEditing={isEditing}
           setEditingId={mockEditingId}
         />
       </TodosContext.Provider>
     );
-    const todo = screen.getByTestId("todo");
+    return {
+      mochDispatch,
+      updateMockTodo,
+      removeMockTodo,
+      mockEditingId,
+      todo: screen.getByTestId("todo"),
+      label: screen.getByTestId("label"),
+      checkbox: screen.getByTestId("toggle"),
+      deleteButton: screen.getByTestId("destroy"),
+      edit: screen.queryByTestId("edit"),
+      mockedTodo,
+      user,
+    };
+  };
+
+  it("should render default state", () => {
+    const { todo, label, checkbox, deleteButton, edit } =
+      renderComponent(false);
+
     expect(todo).not.toHaveClass("completed");
     expect(todo).not.toHaveClass("editing");
-
-    const label = screen.getByTestId("label");
     expect(label).toHaveTextContent("First todo");
-
-    const checkbox = screen.getByTestId("toggle");
     expect(checkbox).not.toBeChecked();
-
-    const deleteButton = screen.getByTestId("destroy");
     expect(deleteButton).toBeInTheDocument();
-
-    const edit = screen.queryByTestId("edit");
     expect(edit).not.toBeInTheDocument();
   });
 
   ////////////////////////
   it("should toogle todo state", async () => {
-    const mochDispatch = vi.fn();
-    const updateMockTodo = vi.fn();
-    const removeMockTodo = vi.fn();
-    const mockEditingId = vi.fn();
-
-    const mockedTodo = {
-      id: 1,
-      text: "First todo",
-      isCompleted: false,
-    };
-
-    render(
-      <TodosContext.Provider
-        value={[
-          {},
-          mochDispatch,
-          { updateTodo: updateMockTodo, removeTodo: removeMockTodo },
-        ]}
-      >
-        <Todo
-          todo={mockedTodo}
-          isEditing={false}
-          setEditingId={mockEditingId}
-        />
-      </TodosContext.Provider>
-    );
-
-    const user = userEvent.setup();
-    const checkbox = screen.getByTestId("toggle");
+    const { checkbox, mockedTodo, user, updateMockTodo } =
+      renderComponent(false);
 
     await user.click(checkbox);
     expect(updateMockTodo).toHaveBeenCalled(mockedTodo.id, {
@@ -84,99 +75,21 @@ describe("Todo", () => {
   });
 
   it("should  delete todo", async () => {
-    const mochDispatch = vi.fn();
-    const updateMockTodo = vi.fn();
-    const removeMockTodo = vi.fn();
-    const mockEditingId = vi.fn();
-
-    const mockedTodo = {
-      id: 1,
-      text: "First todo",
-      isCompleted: false,
-    };
-
-    render(
-      <TodosContext.Provider
-        value={[
-          {},
-          mochDispatch,
-          { updateTodo: updateMockTodo, removeTodo: removeMockTodo },
-        ]}
-      >
-        <Todo
-          todo={mockedTodo}
-          isEditing={false}
-          setEditingId={mockEditingId}
-        />
-      </TodosContext.Provider>
-    );
-
-    const user = userEvent.setup();
-    const deleteButton = screen.getByTestId("destroy");
-
+    const { deleteButton, mockedTodo, user, removeMockTodo } =
+      renderComponent(false);
     await user.click(deleteButton);
     expect(removeMockTodo).toHaveBeenCalled(mockedTodo.id);
   });
 
   it("should  activate editing mode", async () => {
-    const mochDispatch = vi.fn();
-    const updateMockTodo = vi.fn();
-    const removeMockTodo = vi.fn();
-    const mockEditingId = vi.fn();
-
-    const mockedTodo = {
-      id: 1,
-      text: "First todo",
-      isCompleted: false,
-    };
-
-    render(
-      <TodosContext.Provider
-        value={[
-          {},
-          mochDispatch,
-          { updateTodo: updateMockTodo, removeTodo: removeMockTodo },
-        ]}
-      >
-        <Todo
-          todo={mockedTodo}
-          isEditing={false}
-          setEditingId={mockEditingId}
-        />
-      </TodosContext.Provider>
-    );
-    const user = userEvent.setup();
-    const label = screen.getByTestId("label");
+    const { label, mockEditingId, user, mockedTodo } = renderComponent(false);
 
     await user.dblClick(label);
     expect(mockEditingId).toHaveBeenCalledWith(mockedTodo.id);
   });
 
   it("should update todo", async () => {
-    const mochDispatch = vi.fn();
-    const updateMockTodo = vi.fn();
-    const removeMockTodo = vi.fn();
-    const mockEditingId = vi.fn();
-
-    const mockedTodo = {
-      id: 1,
-      text: "First todo",
-      isCompleted: false,
-    };
-
-    render(
-      <TodosContext.Provider
-        value={[
-          {},
-          mochDispatch,
-          { updateTodo: updateMockTodo, removeTodo: removeMockTodo },
-        ]}
-      >
-        <Todo todo={mockedTodo} isEditing={true} setEditingId={mockEditingId} />
-      </TodosContext.Provider>
-    );
-    const user = userEvent.setup();
-    const edit = screen.getByTestId("edit");
+    const { edit, updateMockTodo, user, mockedTodo } = renderComponent(true);
     await user.clear(edit);
     await user.type(edit, "New Text{Enter}");
 
@@ -187,30 +100,7 @@ describe("Todo", () => {
   });
 
   it("should focus input when edit mode is active", async () => {
-    const mochDispatch = vi.fn();
-    const updateMockTodo = vi.fn();
-    const removeMockTodo = vi.fn();
-    const mockEditingId = vi.fn();
-
-    const mockedTodo = {
-      id: 1,
-      text: "First todo",
-      isCompleted: false,
-    };
-
-    render(
-      <TodosContext.Provider
-        value={[
-          {},
-          mochDispatch,
-          { updateTodo: updateMockTodo, removeTodo: removeMockTodo },
-        ]}
-      >
-        <Todo todo={mockedTodo} isEditing={true} setEditingId={mockEditingId} />
-      </TodosContext.Provider>
-    );
-
-    const edit = screen.getByTestId("edit");
+    const { edit } = renderComponent(true);
     expect(edit).toHaveFocus();
   });
 });
