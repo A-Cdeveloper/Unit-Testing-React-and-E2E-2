@@ -2,7 +2,14 @@ import { render, screen } from "@testing-library/react";
 import axios from "axios";
 import { useContext, useEffect } from "react";
 import { describe, expect } from "vitest";
-import { TodosContext, TodosProvider, initialState, reducer } from "./todos";
+import {
+  TodosContext,
+  TodosProvider,
+  addTodo,
+  getTodos,
+  initialState,
+  reducer,
+} from "./todos";
 
 // Helper test component
 const TestingComponent = () => {
@@ -109,5 +116,49 @@ describe("TodosContext reducer", () => {
       payload: "active",
     });
     expect(newState.filter).toBe("active");
+  });
+});
+//////////////////////////////////////////////////////
+
+describe("TodosContext API functions", async () => {
+  it("getTodos", async () => {
+    const mockResponse = {
+      data: [
+        {
+          id: 1,
+          text: "test",
+          isCompleted: false,
+        },
+        {
+          id: 2,
+          text: "test2",
+          isCompleted: true,
+        },
+      ],
+    };
+    const dispatch = vi.fn();
+    vi.spyOn(axios, "get").mockResolvedValue(mockResponse);
+    await getTodos(dispatch);
+    expect(dispatch).toHaveBeenCalledWith({
+      type: "getTodos",
+      payload: mockResponse.data,
+    });
+  });
+
+  it("addTodo", async () => {
+    const mockResponse = {
+      data: {
+        id: 1,
+        text: "test",
+        isCompleted: false,
+      },
+    };
+    const dispatch = vi.fn();
+    vi.spyOn(axios, "post").mockResolvedValue(mockResponse);
+    await addTodo(dispatch, { text: "test", isCompleted: false });
+    expect(dispatch).toHaveBeenCalledWith({
+      type: "addTodo",
+      payload: mockResponse.data,
+    });
   });
 });
